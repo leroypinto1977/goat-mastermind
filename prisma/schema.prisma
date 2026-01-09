@@ -1,0 +1,118 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          String   @id @default(cuid())
+  email       String   @unique
+  name        String
+  password    String
+  role        Role     @default(USER)
+  companyName String?
+  gstNo       String?
+  isTemporary Boolean  @default(false)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("users")
+}
+
+model Product {
+  id          String           @id @default(cuid())
+  name        String
+  description String?
+  category    String
+  price       Float?
+  image       String
+  images      String[]         @default([])
+  weightRange String?
+  isActive    Boolean          @default(true)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  variants    ProductVariant[]
+
+  @@map("products")
+}
+
+model ProductVariant {
+  id          String   @id @default(cuid())
+  productId   String
+  weight      String
+  dimensions  String?
+  description String?
+  width       String?
+  height      String?
+  diameter    String?
+  purities    String[] @default([])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("product_variants")
+}
+
+model Quote {
+  id           String        @id @default(cuid())
+  userId       String?
+  name         String
+  email        String
+  phone        String?
+  businessName String?
+  gstin        String?
+  items        Json          // Array of { productId, productName, quantity }
+  status       QuoteStatus   @default(PENDING)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@map("quotes")
+}
+
+model Order {
+  id            String         @id @default(cuid())
+  orderNumber   String?        @unique
+  userId        String?
+  name          String
+  email         String
+  phone         String?
+  businessName  String?
+  gstin         String?
+  items         Json           // Array of { productId, variantId, productName, variantDetails, quantity }
+  status        OrderStatus    @default(PENDING)
+  paymentStatus PaymentStatus  @default(PENDING)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  @@map("orders")
+}
+
+enum Role {
+  ADMIN
+  USER
+}
+
+enum QuoteStatus {
+  PENDING
+  PROCESSED
+  COMPLETED
+  CANCELLED
+}
+
+enum OrderStatus {
+  PENDING
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  REFUNDED
+}

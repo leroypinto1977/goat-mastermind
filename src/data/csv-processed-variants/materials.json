@@ -1,0 +1,20 @@
+[
+  {
+    "name": "Pure Silver (99.9%)",
+    "slug": "pure-silver-999",
+    "purity": 99.9,
+    "description": "Highest purity silver for premium products"
+  },
+  {
+    "name": "Sterling Silver (92.5%)",
+    "slug": "sterling-silver-925",
+    "purity": 92.5,
+    "description": "Standard silver alloy for durability and beauty"
+  },
+  {
+    "name": "Traditional Silver Alloy",
+    "slug": "traditional-silver-alloy",
+    "purity": 90,
+    "description": "Traditional Indian silver composition"
+  }
+]
