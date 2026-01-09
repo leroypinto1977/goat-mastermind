@@ -10,25 +10,13 @@ import {
   IndianRupee,
   ArrowRight,
   Award,
-  CheckCircle,
   Building2,
 } from "lucide-react";
-import {
-  FACTORY_IMAGES,
-  HOME_CAROUSEL_IMAGES,
-  RETAILER_LOGOS,
-  CERTIFICATIONS,
-  FEATURES,
-  TIMINGS,
-} from "@/config/constants";
+import { FACTORY_IMAGES, FEATURES, TIMINGS } from "@/config/constants";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 import { smoothScrollToElement } from "@/utils/animations";
 
-// Convert carousel images array to objects with src and caption
-const albumImages = HOME_CAROUSEL_IMAGES.map((src, index) => ({
-  src,
-  caption: `Product ${index + 1}`,
-}));
+// Placeholder services data (no longer using carousel images)
 
 export default function HomePage() {
   const router = useRouter();
@@ -84,7 +72,8 @@ export default function HomePage() {
         <div className="w-full px-4 sm:px-6 md:px-12 lg:px-16 py-24 sm:py-28 md:py-32 relative z-10">
           <div className="max-w-2xl space-y-6 sm:space-y-8 animate-on-scroll">
             <p className="text-base sm:text-lg md:text-xl text-white/95 leading-relaxed max-w-xl">
-              Scale your business faster with proven strategies, expert guidance, and a community of successful entrepreneurs
+              Scale your business faster with proven strategies, expert
+              guidance, and a community of successful entrepreneurs
             </p>
             <div className="flex gap-3 sm:gap-4 pt-2 sm:pt-4">
               <button
@@ -206,7 +195,9 @@ export default function HomePage() {
                 <div className="h-12 sm:h-14 md:h-16 lg:h-18 w-24 sm:w-28 md:w-32 lg:w-36 flex items-center justify-center bg-gradient-to-br from-[#F5F5F5] to-[#E8E4DA] rounded-lg border border-[#E8E4DA]">
                   <div className="text-center p-2 sm:p-3">
                     <Award className="w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 text-[#b87333] mx-auto mb-1" />
-                    <p className="text-[8px] sm:text-[10px] md:text-xs text-[#5A5A5A] font-medium">Cert {index + 1}</p>
+                    <p className="text-[8px] sm:text-[10px] md:text-xs text-[#5A5A5A] font-medium">
+                      Cert {index + 1}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -242,7 +233,9 @@ export default function HomePage() {
                       <div className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 mx-auto mb-3 sm:mb-4 bg-[#b87333]/10 rounded-lg flex items-center justify-center">
                         <TrendingUp className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 text-[#b87333]" />
                       </div>
-                      <p className="text-xs sm:text-sm text-[#5A5A5A] font-medium">Service {index + 1}</p>
+                      <p className="text-xs sm:text-sm text-[#5A5A5A] font-medium">
+                        Service {index + 1}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -268,25 +261,26 @@ export default function HomePage() {
             <div className="bg-white rounded-xl sm:rounded-2xl border border-[#E8E4DA] shadow-sm p-5 sm:p-6 md:p-8 lg:p-12 space-y-5 sm:space-y-6">
               <div className="space-y-4 sm:space-y-5 text-left">
                 <p className="text-sm sm:text-base md:text-lg text-[#5A5A5A] leading-relaxed">
-                GOAT Mastermind was founded with one mission — to help
-                   ambitious business owners scale faster and smarter.
-                 </p>
- 
-                 <div className="h-px bg-gradient-to-r from-transparent via-[#E8E4DA] to-transparent my-4 sm:my-5 md:my-6"></div>
- 
-                 <p className="text-sm sm:text-base md:text-lg text-[#5A5A5A] leading-relaxed">
-                   We understand that scaling a business is challenging. That's why we've
-                   created a comprehensive platform that combines proven strategies, expert
-                   mentorship, and a supportive community. Our approach has helped hundreds
-                   of entrepreneurs break through growth plateaus and achieve their goals.
-                 </p>
- 
-                 <div className="h-px bg-gradient-to-r from-transparent via-[#E8E4DA] to-transparent my-4 sm:my-5 md:my-6"></div>
- 
-                 <p className="text-sm sm:text-base md:text-lg text-[#5A5A5A] leading-relaxed">
-                   We're not just consultants — we're your growth partners, committed to
-                   your success every step of the way.
-                 </p>
+                  GOAT Mastermind was founded with one mission — to help
+                  ambitious business owners scale faster and smarter.
+                </p>
+
+                <div className="h-px bg-gradient-to-r from-transparent via-[#E8E4DA] to-transparent my-4 sm:my-5 md:my-6"></div>
+
+                <p className="text-sm sm:text-base md:text-lg text-[#5A5A5A] leading-relaxed">
+                  We understand that scaling a business is challenging. That's
+                  why we've created a comprehensive platform that combines
+                  proven strategies, expert mentorship, and a supportive
+                  community. Our approach has helped hundreds of entrepreneurs
+                  break through growth plateaus and achieve their goals.
+                </p>
+
+                <div className="h-px bg-gradient-to-r from-transparent via-[#E8E4DA] to-transparent my-4 sm:my-5 md:my-6"></div>
+
+                <p className="text-sm sm:text-base md:text-lg text-[#5A5A5A] leading-relaxed">
+                  We're not just consultants — we're your growth partners,
+                  committed to your success every step of the way.
+                </p>
               </div>
             </div>
           </div>
@@ -374,7 +368,9 @@ export default function HomePage() {
                   <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#F5F5F5] to-[#E8E4DA] rounded-lg border border-[#E8E4DA] px-2 sm:px-3">
                     <div className="text-center">
                       <Building2 className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-[#b87333] mx-auto mb-1" />
-                      <p className="text-[8px] sm:text-[10px] text-[#5A5A5A] font-medium whitespace-nowrap">Partner {index + 1}</p>
+                      <p className="text-[8px] sm:text-[10px] text-[#5A5A5A] font-medium whitespace-nowrap">
+                        Partner {index + 1}
+                      </p>
                     </div>
                   </div>
                 </div>

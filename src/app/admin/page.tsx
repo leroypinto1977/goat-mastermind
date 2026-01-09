@@ -578,7 +578,7 @@ export default function AdminDashboard() {
         const data = await response.json();
         toast.error(data.error || "Failed to update user");
       }
-    } catch (error) {
+    } catch (_error) {
       toast.error("Error updating user");
     }
   };
@@ -608,7 +608,7 @@ export default function AdminDashboard() {
         const data = await response.json();
         toast.error(data.error || "Failed to reset password");
       }
-    } catch (error) {
+    } catch (_error) {
       toast.error("Error resetting password");
     }
   };
@@ -632,7 +632,7 @@ export default function AdminDashboard() {
         const data = await response.json();
         toast.error(data.error || "Failed to delete user");
       }
-    } catch (error) {
+    } catch (_error) {
       toast.error("Error deleting user");
     } finally {
       setDeleteUserDialog({ open: false, userId: null });
@@ -640,7 +640,6 @@ export default function AdminDashboard() {
   };
 
   const handleUserCreated = () => {
-    setShowCreateUser(false);
     fetchUsers();
   };
 
@@ -661,7 +660,7 @@ export default function AdminDashboard() {
         products.filter((p) => p.id !== deleteProductDialog.productId)
       );
       toast.success("Staff deleted successfully");
-    } catch (error) {
+    } catch (_error) {
       toast.error("Error deleting staff");
     } finally {
       setDeleteProductDialog({ open: false, productId: null });
@@ -704,7 +703,7 @@ export default function AdminDashboard() {
       } else {
         toast.error("Failed to delete service");
       }
-    } catch (error) {
+    } catch (_error) {
       toast.error("Error deleting service");
     }
   };
@@ -1823,7 +1822,7 @@ export default function AdminDashboard() {
           }
         }}
         onUserCreated={() => {
-          fetchUsers();
+          handleUserCreated();
           setResetPasswordData(null);
         }}
         mode={resetPasswordData ? "reset" : "create"}

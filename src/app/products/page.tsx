@@ -45,10 +45,14 @@ type SanityCollection = any;
 const getProducts = async () => [];
 const getCategories = async () => [];
 const getCollections = async () => [];
-const filterProducts = (products: any[], filters: any) => products;
-const sortProducts = (products: any[], sortBy: string) => products;
-const urlFor = (image: any) => ({
-  width: () => ({ height: () => ({ url: () => "/placeholder.jpg" }) }),
+const filterProducts = (products: any[], _filters: any) => products;
+const sortProducts = (products: any[], _sortBy: string) => products;
+const urlFor = (_image: any) => ({
+  width: (_w?: number) => ({
+    height: (_h?: number) => ({
+      url: () => "/placeholder.jpg",
+    }),
+  }),
 });
 import Image from "next/image";
 import Link from "next/link";
@@ -287,7 +291,9 @@ export default function Products() {
                     </p>
                     <p>
                       <span className="font-medium">Available:</span>{" "}
-                      {product.variants.some((v) => v.status === "available")
+                      {product.variants.some(
+                        (v: any) => v.status === "available"
+                      )
                         ? "Yes"
                         : "No"}
                     </p>

@@ -50,6 +50,11 @@ AUTH_SECRET=your-generated-secret-here    # Generate with: openssl rand -base64 
 
 # Alternative (if using NEXTAUTH_SECRET instead)
 # NEXTAUTH_SECRET=your-generated-secret-here
+
+# Trust Host (NextAuth.js v5 security feature)
+# For development: Can be set to true or left unset (code handles it)
+# For production: Vercel handles this automatically, but can also set:
+# AUTH_TRUST_HOST=true
 ```
 
 #### Generate AUTH_SECRET

@@ -126,6 +126,8 @@ const config: NextAuthConfig = {
   },
   debug: process.env.NODE_ENV === "development",
   secret: process.env.AUTH_SECRET || process.env.NEXTAUTH_SECRET,
+  // Trust host in development and production (Vercel handles this automatically)
+  trustHost: true,
 };
 
 export const { handlers, signIn, signOut, auth } = NextAuth(config);

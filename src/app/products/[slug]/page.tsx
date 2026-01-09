@@ -2,10 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-import { ArrowLeft, Star, Shield, Truck, Award } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import {
   Card,
   CardContent,
@@ -37,10 +36,18 @@ type ProductListItem = any;
 type ProductVariant = any;
 
 // Temporary placeholder functions (replace with Prisma queries)
-const getProductBySlug = async (slug: string): Promise<SanityProduct | null> => null;
-const getRelatedProducts = async (categorySlug: string, currentSlug: string): Promise<ProductListItem[]> => [];
-const urlFor = (image: any) => ({
-  width: () => ({ height: () => ({ url: () => "/placeholder.jpg" }) }),
+const getProductBySlug = async (_slug: string): Promise<SanityProduct | null> =>
+  null;
+const getRelatedProducts = async (
+  _categorySlug: string,
+  _currentSlug: string
+): Promise<ProductListItem[]> => [];
+const urlFor = (_image: any) => ({
+  width: (_w?: number) => ({
+    height: (_h?: number) => ({
+      url: () => "/placeholder.jpg",
+    }),
+  }),
 });
 import Image from "next/image";
 import Link from "next/link";
@@ -210,7 +217,7 @@ export default function ProductDetail() {
                   value={selectedVariant?._key || ""}
                   onValueChange={(value) => {
                     const variant = product.variants.find(
-                      (v) => v._key === value
+                      (v: any) => v._key === value
                     );
                     setSelectedVariant(variant || null);
                   }}
@@ -219,7 +226,7 @@ export default function ProductDetail() {
                     <SelectValue placeholder="Select a variant" />
                   </SelectTrigger>
                   <SelectContent>
-                    {product.variants.map((variant) => (
+                    {product.variants.map((variant: any) => (
                       <SelectItem key={variant._key} value={variant._key}>
                         {variant.weightGrams}g
                         {variant.heightInches && ` - ${variant.heightInches}"`}
@@ -279,8 +286,8 @@ export default function ProductDetail() {
                       {selectedVariant.status === "available"
                         ? "Available"
                         : selectedVariant.status === "out_of_stock"
-                          ? "Out of Stock"
-                          : "Discontinued"}
+                        ? "Out of Stock"
+                        : "Discontinued"}
                     </Badge>
                   </p>
                 </div>
@@ -301,7 +308,7 @@ export default function ProductDetail() {
               <div>
                 <h3 className="text-lg font-semibold mb-3">Materials</h3>
                 <div className="flex flex-wrap gap-2">
-                  {product.materials.map((material) => (
+                  {product.materials.map((material: any) => (
                     <Badge
                       key={material._id}
                       variant="outline"
@@ -320,7 +327,7 @@ export default function ProductDetail() {
               <div>
                 <h3 className="text-lg font-semibold mb-3">Collections</h3>
                 <div className="flex flex-wrap gap-2">
-                  {product.collections.map((collection) => (
+                  {product.collections.map((collection: any) => (
                     <Badge
                       key={collection._id}
                       variant="outline"
@@ -368,8 +375,8 @@ export default function ProductDetail() {
               </CardHeader>
               <CardContent>
                 <div className="flex flex-wrap gap-2">
-                  {product.tags.map((tag, index) => (
-                    <Badge key={index} variant="outline">
+                  {product.tags.map((tag: any, _index: number) => (
+                    <Badge key={_index} variant="outline">
                       {tag}
                     </Badge>
                   ))}
