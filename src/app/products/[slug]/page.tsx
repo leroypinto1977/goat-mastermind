@@ -37,8 +37,8 @@ type ProductListItem = any;
 type ProductVariant = any;
 
 // Temporary placeholder functions (replace with Prisma queries)
-const getProductBySlug = async (slug: string) => null;
-const getRelatedProducts = async (categorySlug: string, currentSlug: string) => [];
+const getProductBySlug = async (slug: string): Promise<SanityProduct | null> => null;
+const getRelatedProducts = async (categorySlug: string, currentSlug: string): Promise<ProductListItem[]> => [];
 const urlFor = (image: any) => ({
   width: () => ({ height: () => ({ url: () => "/placeholder.jpg" }) }),
 });
@@ -67,12 +67,12 @@ export default function ProductDetail() {
         if (productData) {
           setProduct(productData);
           // Set the first available variant as default
-          const firstVariant = productData.variants?.[0];
+          const firstVariant = (productData as any)?.variants?.[0];
           setSelectedVariant(firstVariant || null);
 
           // Get related products
           const related = await getRelatedProducts(
-            productData.category.slug.current,
+            (productData as any)?.category?.slug?.current || "",
             slug
           );
           setRelatedProducts(related);

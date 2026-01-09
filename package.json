@@ -9,6 +9,7 @@
     "lint": "next lint",
     "type-check": "tsc --noEmit",
     "postinstall": "prisma generate",
+    "vercel-build": "prisma generate && prisma migrate deploy && next build",
     "process-csv": "tsx scripts/process-csv-data.ts",
     "process-csv-variants": "tsx scripts/process-csv-with-variants.ts",
     "reset-admin": "tsx scripts/reset-admin.ts",

@@ -20,7 +20,24 @@ A modern business platform built with Next.js 15, TypeScript, Prisma, and NextAu
 - **Authentication**: NextAuth.js v5
 - **UI Components**: Shadcn UI, Radix UI
 - **Styling**: Tailwind CSS
-- **Deployment**: Vercel
+- **Deployment**: Vercel (ready for deployment)
+
+## Deployment
+
+This project is configured and ready for deployment on Vercel.
+
+### Quick Deploy
+
+See the comprehensive deployment guide: **[VERCEL_DEPLOYMENT.md](./VERCEL_DEPLOYMENT.md)**
+
+### Quick Checklist
+
+Before deploying, ensure you have:
+- ✅ PostgreSQL database (Vercel Postgres recommended)
+- ✅ Environment variables configured (see `.env.example`)
+- ✅ Database migrations ready to run
+
+See **[DEPLOYMENT_CHECKLIST.md](./DEPLOYMENT_CHECKLIST.md)** for a complete checklist.
 
 ## Getting Started
 

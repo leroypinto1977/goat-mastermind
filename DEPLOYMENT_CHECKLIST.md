@@ -1,125 +1,146 @@
 # Vercel Deployment Checklist
 
-Use this checklist to ensure your GOAT Mastermind application is ready for deployment.
+Use this checklist to ensure everything is ready for deployment to Vercel.
 
-## Pre-Deployment
+## Pre-Deployment Checklist
 
-- [ ] All code changes committed to Git
-- [ ] TypeScript compilation passes (`npm run type-check`)
-- [ ] No linting errors (`npm run lint`)
-- [ ] Local build succeeds (`npm run build`)
-- [ ] Database schema is up to date
-- [ ] Environment variables documented
+### ✅ Code Preparation
+- [ ] All code is committed to Git
+- [ ] No `.env` files are committed (checked in `.gitignore`)
+- [ ] Build passes locally: `npm run build`
+- [ ] Type checking passes: `npm run type-check`
+- [ ] Linting passes: `npm run lint`
+- [ ] All tests pass (if any)
 
-## Database Setup
-
-- [ ] PostgreSQL database created (Vercel Postgres, Supabase, or other)
+### ✅ Database Setup
+- [ ] PostgreSQL database created (Vercel Postgres or external)
 - [ ] Database connection string obtained
 - [ ] Database migrations ready to run
-- [ ] Initial admin user created (or seed script ready)
+- [ ] Initial data seeding script prepared (optional)
 
-## Vercel Configuration
+### ✅ Environment Variables
+- [ ] `DATABASE_URL` - Database connection string
+- [ ] `NEXTAUTH_URL` - Your production URL (e.g., `https://your-app.vercel.app`)
+- [ ] `AUTH_SECRET` or `NEXTAUTH_SECRET` - Generated secure secret
+- [ ] All required variables documented in `.env.example`
 
-- [ ] Vercel account created
-- [ ] Project imported from Git repository
-- [ ] Environment variables added in Vercel dashboard:
-  - [ ] `DATABASE_URL`
-  - [ ] `NEXTAUTH_URL` (production URL)
-  - [ ] `NEXTAUTH_SECRET` (generated secure key)
-  - [ ] Optional: Sanity variables (if using)
-
-## Build Configuration
-
+### ✅ Configuration Files
 - [ ] `vercel.json` configured correctly
-- [ ] `package.json` has `postinstall` script for Prisma
-- [ ] Build command includes Prisma generate
+- [ ] `next.config.ts` optimized for production
+- [ ] `package.json` has correct build scripts
+- [ ] `prisma/schema.prisma` is up to date
 
-## Post-Deployment
+### ✅ Security
+- [ ] No sensitive data in code
+- [ ] API routes are protected with authentication
+- [ ] CORS headers configured appropriately
+- [ ] Environment variables stored securely in Vercel
 
-- [ ] Database migrations run successfully
-- [ ] Application accessible at deployment URL
-- [ ] Authentication working
-- [ ] Admin panel accessible
-- [ ] Products displaying correctly
-- [ ] Orders/quotes can be created
-- [ ] No console errors in browser
-- [ ] No errors in Vercel function logs
+## Deployment Steps
 
-## Testing Checklist
+### 1. Vercel Project Setup
+- [ ] Create Vercel account (if not exists)
+- [ ] Create new project in Vercel dashboard
+- [ ] Connect Git repository (GitHub/GitLab/Bitbucket)
 
-- [ ] Homepage loads
-- [ ] User registration/login works
-- [ ] Product browsing works
-- [ ] Add to cart/quote works
-- [ ] Order placement works
-- [ ] Quote request works
-- [ ] Admin dashboard accessible
-- [ ] Admin can manage products
-- [ ] Admin can manage users
-- [ ] Admin can view orders/quotes
+### 2. Database Configuration
+- [ ] Create Vercel Postgres database (or configure external DB)
+- [ ] Copy database connection string
+- [ ] Add `DATABASE_URL` to Vercel environment variables
+
+### 3. Environment Variables in Vercel
+- [ ] Go to Project Settings → Environment Variables
+- [ ] Add `DATABASE_URL` (Production, Preview, Development)
+- [ ] Add `NEXTAUTH_URL` (Production: `https://your-app.vercel.app`)
+- [ ] Add `AUTH_SECRET` or `NEXTAUTH_SECRET` (generated with `openssl rand -base64 32`)
+- [ ] Add any optional variables (Sanity, etc.)
+
+### 4. Deploy
+- [ ] Trigger deployment (push to main branch or manual deploy)
+- [ ] Wait for build to complete
+- [ ] Check build logs for errors
+
+### 5. Post-Deployment
+- [ ] Run database migrations: `npx prisma migrate deploy`
+- [ ] Seed initial data (admin user, services): `npm run seed-services && npm run reset-admin`
+- [ ] Verify deployment URL is accessible
+- [ ] Test authentication (login/logout)
+- [ ] Test quote generation and PDF download
+- [ ] Test admin panel functionality
+- [ ] Verify all API routes work correctly
+
+## Post-Deployment Verification
+
+### ✅ Functionality Tests
+- [ ] Home page loads correctly
+- [ ] Authentication works (login/logout)
+- [ ] User registration works (if applicable)
+- [ ] Quote request form works
+- [ ] PDF generation works
+- [ ] Admin panel accessible and functional
+- [ ] Services can be managed in admin panel
+- [ ] Staff can be managed in admin panel
+- [ ] Quotes display correctly in admin panel
+
+### ✅ Performance Checks
+- [ ] Page load times are acceptable
 - [ ] Images load correctly
-- [ ] Responsive design works on mobile
+- [ ] No console errors in browser
+- [ ] API response times are reasonable
+- [ ] Serverless functions execute within timeout
 
-## Security
+### ✅ Security Checks
+- [ ] HTTPS is enforced
+- [ ] Environment variables are not exposed
+- [ ] Admin routes are protected
+- [ ] API routes require authentication where needed
+- [ ] No sensitive data in client-side code
 
-- [ ] Environment variables not exposed in code
-- [ ] `.env` files in `.gitignore`
-- [ ] Admin routes protected
-- [ ] API routes have proper authentication
-- [ ] Database credentials secure
+## Monitoring Setup
 
-## Performance
+### ✅ Vercel Dashboard
+- [ ] Monitor deployment status
+- [ ] Check function logs regularly
+- [ ] Monitor error rates
+- [ ] Track performance metrics
 
-- [ ] Images optimized
-- [ ] Build output size reasonable
-- [ ] No unnecessary dependencies
-- [ ] Database queries optimized
+### ✅ Database Monitoring
+- [ ] Monitor database connections
+- [ ] Check query performance
+- [ ] Monitor database size
+- [ ] Set up alerts for errors
 
-## Monitoring (Optional)
+## Rollback Plan
 
-- [ ] Error tracking set up (Sentry, etc.)
-- [ ] Analytics configured
-- [ ] Uptime monitoring
+If something goes wrong:
+- [ ] Know how to rollback to previous deployment (Vercel dashboard)
+- [ ] Have backup of database migrations
+- [ ] Document any manual fixes needed
 
-## Documentation
+## Common Issues & Solutions
 
-- [ ] README.md updated
-- [ ] DEPLOYMENT.md created
-- [ ] ENV_SETUP.md created
-- [ ] Team members have access
+### Build Fails
+- Check build logs in Vercel dashboard
+- Verify all dependencies are in `package.json`
+- Ensure `prisma generate` runs in build command
 
----
+### Database Connection Errors
+- Verify `DATABASE_URL` is correct
+- Check database is accessible
+- Ensure migrations are run
 
-## Quick Deploy Commands
+### Environment Variables Not Working
+- Verify variables are set for correct environment
+- Redeploy after adding variables
+- Check variable names are exact (case-sensitive)
 
-```bash
-# 1. Test build locally
-npm run build
+### Authentication Issues
+- Verify `AUTH_SECRET` is set
+- Check `NEXTAUTH_URL` matches deployment URL
+- Clear browser cookies
 
-# 2. Deploy to Vercel
-vercel
+## Notes
 
-# 3. Deploy to production
-vercel --prod
-
-# 4. Run migrations (after deployment)
-npx prisma migrate deploy
-```
-
-## Troubleshooting
-
-If deployment fails:
-
-1. Check Vercel build logs
-2. Verify environment variables
-3. Ensure database is accessible
-4. Check for TypeScript errors
-5. Verify Prisma Client is generated
-
-## Support
-
-For issues, check:
-- [DEPLOYMENT.md](./DEPLOYMENT.md) - Detailed deployment guide
-- [ENV_SETUP.md](./ENV_SETUP.md) - Environment variables guide
-- Vercel Documentation: https://vercel.com/docs
-
+- Keep this checklist updated as deployment process evolves
+- Document any custom deployment steps
+- Note any manual interventions required
