@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import {
   TrendingUp,
   Star,
@@ -60,13 +61,16 @@ export default function HomePage() {
       `}</style>
       <section className="min-h-screen flex items-center relative overflow-hidden">
         <div className="absolute inset-0 z-0">
-          <img
+          <Image
             src="/albums/hero.jpg"
             alt="GOAT Mastermind Hero"
-            className="w-full h-full object-cover hero-image"
-            loading="eager"
+            fill
+            priority
+            quality={90}
+            className="object-cover hero-image"
+            sizes="100vw"
+            unoptimized={false}
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#1A1A1A]/70 via-[#1A1A1A]/40 to-transparent sm:from-[#1A1A1A]/60 sm:via-[#1A1A1A]/30"></div>
         </div>
 
         <div className="w-full px-4 sm:px-6 md:px-12 lg:px-16 py-24 sm:py-28 md:py-32 relative z-10">
@@ -77,7 +81,7 @@ export default function HomePage() {
             </p>
             <div className="flex gap-3 sm:gap-4 pt-2 sm:pt-4">
               <button
-                onClick={() => handleNavigate("quote")}
+                onClick={() => router.push("/contact")}
                 className="px-6 py-3 sm:px-8 sm:py-3 bg-transparent border-2 border-white text-white rounded-full text-sm sm:text-base font-medium transition-all duration-300 hover:bg-white hover:text-[#1A1A1A] min-h-[44px]"
               >
                 Get Started
@@ -386,12 +390,7 @@ export default function HomePage() {
             Ready to scale your business? Let's discuss your growth strategy
           </h2>
           <button
-            onClick={() => {
-              handleNavigate("quote");
-              setTimeout(() => {
-                smoothScrollToElement("quote-hero");
-              }, 100);
-            }}
+            onClick={() => router.push("/contact")}
             className="px-6 py-3 sm:px-8 sm:py-4 bg-[#b87333] text-white rounded-full text-sm sm:text-base font-normal transition-colors duration-300 hover:bg-[#9d5f28] flex items-center justify-center gap-2 mx-auto min-h-[44px]"
           >
             Start Growing

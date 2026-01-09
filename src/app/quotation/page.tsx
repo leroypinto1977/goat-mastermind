@@ -327,19 +327,36 @@ export default function QuotationPage() {
                   <LogIn className="w-10 h-10 sm:w-12 sm:h-12 text-[#b87333]" />
                 </div>
                 <h2 className="text-2xl sm:text-3xl md:text-4xl font-light text-[#1C1C1C] mb-4 sm:mb-6">
-                  Login to Get Your Quote
+                  Members Only
                 </h2>
+                <div className="bg-amber-50 border-l-4 border-amber-400 p-4 mb-6 rounded text-left">
+                  <p className="text-sm sm:text-base text-amber-800">
+                    <strong>Important:</strong> Quote requests are exclusively
+                    available to GOAT Mastermind members. If you&apos;re not yet
+                    a member, please register for our workshop first or contact
+                    us to learn more about membership.
+                  </p>
+                </div>
                 <p className="text-base sm:text-lg text-[#5A5A5A] mb-8 sm:mb-10 leading-relaxed">
-                  Please log in to access our quotation form and get a
-                  personalized quote for your business growth needs.
+                  Please log in to your GOAT Mastermind account to access our
+                  quotation form and get a personalized quote for your business
+                  growth needs.
                 </p>
-                <button
-                  onClick={() => router.push("/auth")}
-                  className="px-8 sm:px-10 py-3 sm:py-4 bg-[#b87333] text-white rounded-full text-base sm:text-lg font-medium transition-all duration-300 hover:bg-[#9d5f28] hover:shadow-lg flex items-center justify-center gap-2 mx-auto min-h-[44px]"
-                >
-                  <LogIn className="w-5 h-5" />
-                  Login Now
-                </button>
+                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                  <button
+                    onClick={() => router.push("/auth")}
+                    className="px-8 sm:px-10 py-3 sm:py-4 bg-[#b87333] text-white rounded-full text-base sm:text-lg font-medium transition-all duration-300 hover:bg-[#9d5f28] hover:shadow-lg flex items-center justify-center gap-2 min-h-[44px]"
+                  >
+                    <LogIn className="w-5 h-5" />
+                    Login Now
+                  </button>
+                  <button
+                    onClick={() => router.push("/contact")}
+                    className="px-8 sm:px-10 py-3 sm:py-4 bg-transparent border-2 border-[#b87333] text-[#b87333] rounded-full text-base sm:text-lg font-medium transition-all duration-300 hover:bg-[#b87333] hover:text-white flex items-center justify-center gap-2 min-h-[44px]"
+                  >
+                    Learn More
+                  </button>
+                </div>
               </div>
             </div>
           ) : (

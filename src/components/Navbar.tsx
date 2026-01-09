@@ -120,9 +120,7 @@ export default function Navbar({ onNavigate, currentPage }: NavbarProps) {
       label: "Contact",
       ariaLabel: "Contact us",
       onClick: () => {
-        document
-          .getElementById("contact")
-          ?.scrollIntoView({ behavior: "smooth" });
+        router.push("/contact");
       },
     },
     // Add Admin Dashboard menu item if user is admin

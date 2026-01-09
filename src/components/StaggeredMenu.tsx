@@ -756,30 +756,6 @@ export const StaggeredMenu: React.FC<StaggeredMenuProps> = ({
               <div className="text-center text-[#1C1C1C]/50">No items</div>
             )}
           </nav>
-
-          <div className="mt-auto pt-4 md:pt-6 border-t border-[#b87333]/30">
-            <button
-              onClick={() => {
-                toggleMenu();
-                if (onNavigate) {
-                  onNavigate("quote");
-                  setTimeout(() => {
-                    const categoriesSection =
-                      document.getElementById("categories-section");
-                    if (categoriesSection) {
-                      categoriesSection.scrollIntoView({
-                        behavior: "smooth",
-                        block: "start",
-                      });
-                    }
-                  }, 100);
-                }
-              }}
-              className="w-full px-5 md:px-6 py-3 md:py-3.5 bg-[#b87333] text-white text-sm md:text-base font-normal rounded-full hover:bg-[#9d5f28] hover:shadow-lg transition-all duration-200 min-h-[44px]"
-            >
-              Explore Products
-            </button>
-          </div>
         </aside>
       </div>
 

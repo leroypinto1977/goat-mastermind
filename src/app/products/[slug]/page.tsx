@@ -19,8 +19,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
 // TODO: Update to use Prisma instead of Sanity
 // import {
 //   SanityProduct,
@@ -95,14 +93,12 @@ export default function ProductDetail() {
   if (loading) {
     return (
       <div className="min-h-screen bg-background">
-        <Header />
         <div className="container mx-auto px-6 py-20">
           <div className="text-center">
             <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary mx-auto"></div>
             <p className="mt-4 text-gray-600">Loading product details...</p>
           </div>
         </div>
-        <Footer />
       </div>
     );
   }
@@ -110,7 +106,6 @@ export default function ProductDetail() {
   if (!product) {
     return (
       <div className="min-h-screen bg-background">
-        <Header />
         <div className="container mx-auto px-6 py-20">
           <div className="text-center">
             <h1 className="text-4xl font-bold text-gray-900 mb-4">
@@ -127,15 +122,12 @@ export default function ProductDetail() {
             </Link>
           </div>
         </div>
-        <Footer />
       </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
-
       <main className="container mx-auto px-6 py-8">
         {/* Breadcrumb */}
         <div className="flex items-center gap-2 text-sm text-gray-600 mb-8">
@@ -442,8 +434,6 @@ export default function ProductDetail() {
           </div>
         )}
       </main>
-
-      <Footer />
     </div>
   );
 }

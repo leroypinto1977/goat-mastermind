@@ -3,8 +3,6 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
 import { Award, Users, Clock, Globe } from "lucide-react";
 
 export default function About() {
@@ -77,8 +75,6 @@ export default function About() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
-
       <main>
         {/* Hero Section */}
         <section className="py-20 bg-gradient-to-br from-background to-gray-50">
@@ -229,7 +225,6 @@ export default function About() {
         </section>
       </main>
 
-      <Footer />
     </div>
   );
 }
