@@ -238,7 +238,7 @@ const ProductManagement = () => {
                     </TableCell>
                     <TableCell>{product.category}</TableCell>
                     <TableCell>{product.sku}</TableCell>
-                    <TableCell>${product.price}</TableCell>
+                    <TableCell>₹{product.price?.toLocaleString("en-IN") || "0"}</TableCell>
                     <TableCell>
                       <div className="flex items-center space-x-2">
                         <span>{product.stock_quantity}</span>

@@ -29,6 +29,7 @@ interface CategoryManagementDialogProps {
   onOpenChange: (open: boolean) => void;
   categories: string[];
   onCategoriesUpdate: (categories: string[]) => void;
+  isServicesTab?: boolean;
 }
 
 const CategoryManagementDialog = ({
@@ -36,6 +37,7 @@ const CategoryManagementDialog = ({
   onOpenChange,
   categories,
   onCategoriesUpdate,
+  isServicesTab = false,
 }: CategoryManagementDialogProps) => {
   const [localCategories, setLocalCategories] = useState<string[]>([]);
   const [newCategory, setNewCategory] = useState("");
@@ -59,6 +61,7 @@ const CategoryManagementDialog = ({
       return;
     }
 
+    // For Services tab, allow any category to be added (no restrictions)
     setLocalCategories([...localCategories, newCategory.trim()]);
     setNewCategory("");
     toast.success("Category added");
@@ -77,6 +80,7 @@ const CategoryManagementDialog = ({
       return;
     }
 
+    // For Services tab, allow editing any category (no restrictions)
     if (
       localCategories.includes(editingValue.trim()) &&
       editingValue.trim() !== localCategories[editingIndex]
@@ -99,6 +103,7 @@ const CategoryManagementDialog = ({
   };
 
   const handleDeleteCategory = (index: number) => {
+    // Allow deleting any category (no restrictions for Services tab)
     setDeleteCategoryDialog({ open: true, index });
   };
 
@@ -126,8 +131,9 @@ const CategoryManagementDialog = ({
         <DialogHeader>
           <DialogTitle>Manage Categories</DialogTitle>
           <DialogDescription>
-            Add, edit, or delete product categories. These will appear in the
-            dropdown when adding products.
+            {isServicesTab
+              ? "Add, edit, or delete service type categories. These will appear in the Service Type dropdown when adding services."
+              : "Add, edit, or delete product categories. These will appear in the dropdown when adding products."}
           </DialogDescription>
         </DialogHeader>
 

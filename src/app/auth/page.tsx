@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, Suspense } from "react";
-import { signIn, getSession } from "next-auth/react";
+import { signIn, getSession, useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,11 +11,17 @@ import { toast } from "sonner";
 function AuthPageContent() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
   const [error, setError] = useState("");
+  const [showChangePassword, setShowChangePassword] = useState(false);
+  const [isAnimating, setIsAnimating] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams?.get("callbackUrl") || "/";
+  const { data: session, update } = useSession();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -32,6 +38,7 @@ function AuthPageContent() {
       if (result?.error) {
         setError("Invalid email or password");
         toast.error("Login failed");
+        setIsLoading(false);
         return;
       }
 
@@ -42,7 +49,12 @@ function AuthPageContent() {
 
         // Check if user has temporary password
         if (session.user.isTemporary) {
-          router.push("/change-password");
+          // Trigger animation to show change password form
+          setIsAnimating(true);
+          setTimeout(() => {
+            setShowChangePassword(true);
+            setIsAnimating(false);
+          }, 300);
         } else if (session.user.role === "ADMIN") {
           router.push("/admin");
         } else {
@@ -59,12 +71,66 @@ function AuthPageContent() {
     }
   };
 
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsChangingPassword(true);
+    setError("");
+
+    if (newPassword !== confirmPassword) {
+      setError("Passwords do not match");
+      setIsChangingPassword(false);
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      setError("Password must be at least 6 characters long");
+      setIsChangingPassword(false);
+      return;
+    }
+
+    try {
+      const response = await fetch("/api/auth/change-password", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          newPassword,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to change password");
+      }
+
+      // Update the session to reflect the password change
+      await update();
+
+      toast.success("Password changed successfully!");
+
+      // Redirect based on user role
+      if (session?.user?.role === "ADMIN") {
+        router.push("/admin");
+      } else {
+        router.push(callbackUrl);
+      }
+    } catch (error: any) {
+      console.error("Password change error:", error);
+      setError(error.message || "An unexpected error occurred");
+      toast.error("Failed to change password");
+    } finally {
+      setIsChangingPassword(false);
+    }
+  };
+
   return (
-    <div className="min-h-screen flex bg-gradient-to-br from-[#b87333]/10 via-[#b87333]/5 to-[#FAF9F7]">
-      {/* Left Side - Login Form */}
-      <div className="w-full lg:w-1/2 flex flex-col">
+    <div className="min-h-screen flex bg-gradient-to-br from-[#b87333]/10 via-[#b87333]/5 to-[#FAF9F7] overflow-hidden">
+      {/* Left Side - Forms Container */}
+      <div className="w-full lg:w-1/2 flex flex-col relative">
         {/* Logo in top left corner */}
-        <div className="p-6 sm:p-8">
+        <div className="p-6 sm:p-8 z-10">
           <img
             src="/logos/Main logo.webp"
             alt="GOAT Mastermind Logo"
@@ -73,9 +139,16 @@ function AuthPageContent() {
           />
         </div>
 
-        {/* Login Form Container */}
-        <div className="flex-1 flex items-start justify-start px-6 sm:px-8 md:px-12 lg:px-16 pt-12 sm:pt-16 pb-8">
-          <div className="w-full max-w-md">
+        {/* Forms Container with Animation */}
+        <div className="flex-1 flex items-start justify-start px-6 sm:px-8 md:px-12 lg:px-16 pt-12 sm:pt-16 pb-8 relative overflow-hidden">
+          {/* Login Form */}
+          <div
+            className={`w-full max-w-md absolute transition-all duration-500 ease-in-out ${
+              showChangePassword
+                ? "-translate-x-full opacity-0 pointer-events-none"
+                : "translate-x-0 opacity-100"
+            } ${isAnimating ? "transition-all duration-500 ease-in-out" : ""}`}
+          >
             {/* Welcome Back Text */}
             <div className="mb-8 sm:mb-10 text-left">
               <p className="text-3xl sm:text-4xl md:text-5xl font-light text-[#1C1C1C] mb-3 text-left">
@@ -91,7 +164,7 @@ function AuthPageContent() {
 
             {/* Login Form */}
             <form onSubmit={handleSubmit} className="space-y-6">
-              {error && (
+              {error && !showChangePassword && (
                 <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
                   {error}
                 </div>
@@ -112,7 +185,7 @@ function AuthPageContent() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
-                    disabled={isLoading}
+                    disabled={isLoading || showChangePassword}
                     className="w-full pl-12 pr-4 py-5 border border-[#E8E4DA] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#b87333] focus:border-transparent text-base sm:text-lg bg-white"
                   />
                 </div>
@@ -133,7 +206,7 @@ function AuthPageContent() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
-                    disabled={isLoading}
+                    disabled={isLoading || showChangePassword}
                     className="w-full pl-12 pr-4 py-5 border border-[#E8E4DA] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#b87333] focus:border-transparent text-base sm:text-lg bg-white"
                   />
                 </div>
@@ -150,7 +223,7 @@ function AuthPageContent() {
 
               <button
                 type="submit"
-                disabled={isLoading}
+                disabled={isLoading || showChangePassword}
                 className="w-full px-6 sm:px-8 py-2.5 sm:py-3 bg-[#b87333] text-white rounded-lg text-sm sm:text-base font-medium transition-all duration-300 hover:bg-[#9d5f28] hover:shadow-lg flex items-center justify-center gap-2 min-h-[40px] disabled:opacity-60 disabled:cursor-not-allowed"
               >
                 {isLoading ? (
@@ -173,6 +246,107 @@ function AuthPageContent() {
                 >
                   Contact us
                 </a>
+              </p>
+            </div>
+          </div>
+
+          {/* Change Password Form */}
+          <div
+            className={`w-full max-w-md absolute transition-all duration-500 ease-in-out ${
+              showChangePassword
+                ? "translate-x-0 opacity-100"
+                : "translate-x-full opacity-0 pointer-events-none"
+            } ${isAnimating ? "transition-all duration-500 ease-in-out" : ""}`}
+          >
+            {/* Change Password Heading */}
+            <div className="mb-8 sm:mb-10 text-left">
+              <p className="text-3xl sm:text-4xl md:text-5xl font-light text-[#1C1C1C] mb-3 text-left">
+                Change Password
+              </p>
+              <p className="text-base sm:text-lg text-[#5A5A5A] text-left">
+                Please create a new secure password to continue
+              </p>
+            </div>
+
+            {/* Change Password Form */}
+            <form onSubmit={handleChangePassword} className="space-y-6">
+              {error && showChangePassword && (
+                <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+                  {error}
+                </div>
+              )}
+
+              <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg mb-4">
+                <p className="text-sm text-yellow-800">
+                  <strong>Security Notice:</strong> You&apos;re using a
+                  temporary password. Please create a new secure password to
+                  continue.
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <Label
+                  htmlFor="newPassword"
+                  className="block text-sm sm:text-base font-medium text-[#1C1C1C]"
+                >
+                  New Password
+                </Label>
+                <div className="relative">
+                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#5A5A5A]" />
+                  <Input
+                    id="newPassword"
+                    type="password"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    required
+                    disabled={isChangingPassword}
+                    minLength={6}
+                    className="w-full pl-12 pr-4 py-5 border border-[#E8E4DA] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#b87333] focus:border-transparent text-base sm:text-lg bg-white"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label
+                  htmlFor="confirmPassword"
+                  className="block text-sm sm:text-base font-medium text-[#1C1C1C]"
+                >
+                  Confirm New Password
+                </Label>
+                <div className="relative">
+                  <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#5A5A5A]" />
+                  <Input
+                    id="confirmPassword"
+                    type="password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    required
+                    disabled={isChangingPassword}
+                    minLength={6}
+                    className="w-full pl-12 pr-4 py-5 border border-[#E8E4DA] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#b87333] focus:border-transparent text-base sm:text-lg bg-white"
+                  />
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={isChangingPassword}
+                className="w-full px-6 sm:px-8 py-2.5 sm:py-3 bg-[#b87333] text-white rounded-lg text-sm sm:text-base font-medium transition-all duration-300 hover:bg-[#9d5f28] hover:shadow-lg flex items-center justify-center gap-2 min-h-[40px] disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                {isChangingPassword ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    Changing Password...
+                  </>
+                ) : (
+                  "Change Password"
+                )}
+              </button>
+            </form>
+
+            <div className="mt-6 text-left">
+              <p className="text-sm text-[#5A5A5A]">
+                This is a one-time requirement for security purposes.
               </p>
             </div>
           </div>

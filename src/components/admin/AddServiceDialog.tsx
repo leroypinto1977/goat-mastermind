@@ -20,13 +20,13 @@ interface AddServiceDialogProps {
   onServiceAdded: (service: any) => void;
   onServiceUpdated?: (service: any) => void;
   editService?: any;
+  serviceTypes?: string[]; // Dynamic service types from categories
 }
 
-const serviceTypes = [
+const defaultServiceTypes = [
   "Writer",
   "Editor",
   "Videographer",
-  "Other",
 ];
 
 const serviceLevels = [
@@ -41,6 +41,7 @@ const AddServiceDialog = ({
   onServiceAdded,
   onServiceUpdated,
   editService,
+  serviceTypes = defaultServiceTypes, // Use provided service types or defaults
 }: AddServiceDialogProps) => {
   const isEditMode = !!editService;
 
@@ -55,15 +56,43 @@ const AddServiceDialog = ({
   // Populate form when editing or reset when adding new
   useEffect(() => {
     if (editService && open) {
-      // Parse service name if it's in format "Writer - Professional"
-      const nameParts = editService.name?.split(" - ") || [];
-      if (nameParts.length === 2) {
-        setServiceType(nameParts[0]);
-        setServiceLevel(nameParts[1]);
+      // Reset form fields first
+      setServiceName("");
+      setServiceType("");
+      setServiceLevel("");
+      
+      // Priority 1: Use category if it exists in available service types
+      if (editService.category && serviceTypes.includes(editService.category)) {
+        setServiceType(editService.category);
+        setCategory(editService.category);
+        
+        // Try to extract level from name (format: "ServiceType - Professional")
+        const nameParts = editService.name?.split(" - ") || [];
+        if (nameParts.length >= 2 && nameParts[0] === editService.category) {
+          setServiceLevel(nameParts[1]);
+        }
       } else {
-        setServiceName(editService.name || "");
+        // Priority 2: Parse service name if it's in format "ServiceType - Level"
+        const nameParts = editService.name?.split(" - ") || [];
+        if (nameParts.length >= 2 && serviceTypes.includes(nameParts[0])) {
+          setServiceType(nameParts[0]);
+          setServiceLevel(nameParts[1]);
+          setCategory(nameParts[0]);
+        } else {
+          // Fallback: use name as-is and try to extract category from name
+          setServiceName(editService.name || "");
+          if (nameParts.length >= 1 && serviceTypes.includes(nameParts[0])) {
+            setServiceType(nameParts[0]);
+            setCategory(nameParts[0]);
+          } else if (editService.category && serviceTypes.includes(editService.category)) {
+            setServiceType(editService.category);
+            setCategory(editService.category);
+          } else {
+            setCategory(editService.category || "");
+          }
+        }
       }
-      setCategory(editService.category || "Services");
+      
       setPrice(editService.price || "");
       setDescription(editService.description || "");
     } else if (!editService && open) {
@@ -71,7 +100,7 @@ const AddServiceDialog = ({
       setServiceName("");
       setServiceType("");
       setServiceLevel("");
-      setCategory("Services");
+      setCategory("");
       setPrice("");
       setDescription("");
     }
@@ -81,9 +110,9 @@ const AddServiceDialog = ({
     e.preventDefault();
     setIsSubmitting(true);
 
-    // Validate required fields
-    if (!serviceName && (!serviceType || !serviceLevel)) {
-      toast.error("Please provide either a service name or select both service type and level");
+    // Validate required fields - Service Type and Level are required
+    if (!serviceType || !serviceLevel) {
+      toast.error("Please select both Service Type and Service Level");
       setIsSubmitting(false);
       return;
     }
@@ -102,15 +131,18 @@ const AddServiceDialog = ({
     }
 
     try {
-      // Generate service name from type and level if name is not provided
-      const finalServiceName = serviceName || `${serviceType} - ${serviceLevel}`;
+      // Generate service name from type and level
+      // Use manual name if provided, otherwise auto-generate from type and level
+      const finalServiceName = serviceName.trim() || `${serviceType} - ${serviceLevel}`;
+      // Category should be the Service Type (Writer, Editor, Videographer), not "Services"
+      const finalCategory = serviceType;
 
       if (isEditMode) {
         // Update existing service
         const updatedService = {
           ...editService,
           name: finalServiceName,
-          category: "Services",
+          category: finalCategory, // Use service type as category
           price: numericPrice,
           description,
           updatedAt: new Date().toISOString(),
@@ -123,7 +155,7 @@ const AddServiceDialog = ({
         const newService = {
           id: Date.now().toString(),
           name: finalServiceName,
-          category: "Services",
+          category: finalCategory, // Use service type as category
           price: numericPrice,
           description,
           image: "/logos/Main logo.png",
@@ -140,7 +172,7 @@ const AddServiceDialog = ({
       setServiceName("");
       setServiceType("");
       setServiceLevel("");
-      setCategory("Services");
+      setCategory("");
       setPrice("");
       setDescription("");
       onOpenChange(false);
@@ -166,88 +198,93 @@ const AddServiceDialog = ({
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Service Name - Optional if using Type + Level */}
+          {/* Service Type and Level - Always Visible */}
+          <div className="grid grid-cols-2 gap-4">
+            {/* Service Type */}
+            <div className="space-y-2">
+              <Label htmlFor="serviceType">
+                Service Type <span className="text-red-500">*</span>
+              </Label>
+              <select
+                id="serviceType"
+                value={serviceType}
+                onChange={(e) => {
+                  setServiceType(e.target.value);
+                  // Update category to match service type
+                  if (e.target.value) {
+                    setCategory(e.target.value);
+                  }
+                }}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#b87333] focus:border-transparent"
+                required
+              >
+                <option value="">Select service type</option>
+                {serviceTypes.map((type) => (
+                  <option key={type} value={type}>
+                    {type}
+                  </option>
+                ))}
+              </select>
+              <p className="text-xs text-gray-500">
+                Writer, Editor, or Videographer
+              </p>
+            </div>
+
+            {/* Service Level */}
+            <div className="space-y-2">
+              <Label htmlFor="serviceLevel">
+                Service Level <span className="text-red-500">*</span>
+              </Label>
+              <select
+                id="serviceLevel"
+                value={serviceLevel}
+                onChange={(e) => setServiceLevel(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#b87333] focus:border-transparent"
+                required
+              >
+                <option value="">Select level</option>
+                {serviceLevels.map((level) => (
+                  <option key={level} value={level}>
+                    {level}
+                  </option>
+                ))}
+              </select>
+              <p className="text-xs text-gray-500">
+                Professional, Expert, or Creative Director
+              </p>
+            </div>
+          </div>
+
+          {/* Service Name - Optional override */}
           <div className="space-y-2">
             <Label htmlFor="serviceName">
               Service Name (Optional - will be auto-generated from Type & Level)
             </Label>
             <Input
               id="serviceName"
-              placeholder="e.g., Writer - Professional"
+              placeholder={`e.g., ${serviceType || "Writer"} - ${serviceLevel || "Professional"}`}
               value={serviceName}
               onChange={(e) => setServiceName(e.target.value)}
             />
             <p className="text-xs text-gray-500">
-              Leave empty to auto-generate from Service Type and Level below
+              Leave empty to auto-generate from Service Type and Level above
             </p>
           </div>
 
-          {/* Service Type and Level */}
-          {!serviceName && (
-            <>
-              <div className="grid grid-cols-2 gap-4">
-                {/* Service Type */}
-                <div className="space-y-2">
-                  <Label htmlFor="serviceType">
-                    Service Type <span className="text-red-500">*</span>
-                  </Label>
-                  <select
-                    id="serviceType"
-                    value={serviceType}
-                    onChange={(e) => setServiceType(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#b87333] focus:border-transparent"
-                    required={!serviceName}
-                  >
-                    <option value="">Select service type</option>
-                    {serviceTypes.map((type) => (
-                      <option key={type} value={type}>
-                        {type}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* Service Level */}
-                <div className="space-y-2">
-                  <Label htmlFor="serviceLevel">
-                    Service Level <span className="text-red-500">*</span>
-                  </Label>
-                  <select
-                    id="serviceLevel"
-                    value={serviceLevel}
-                    onChange={(e) => setServiceLevel(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#b87333] focus:border-transparent"
-                    required={!serviceName}
-                  >
-                    <option value="">Select level</option>
-                    {serviceLevels.map((level) => (
-                      <option key={level} value={level}>
-                        {level}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-            </>
-          )}
-
-          {/* Category - Fixed to Services */}
+          {/* Category - Auto-set to Service Type, Display Only */}
           <div className="space-y-2">
             <Label htmlFor="category">
               Category <span className="text-red-500">*</span>
             </Label>
-            <select
+            <Input
               id="category"
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
+              value={serviceType || category || "Select Service Type above"}
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#b87333] focus:border-transparent bg-gray-50"
-              required
+              readOnly
               disabled
-            >
-              <option value="Services">Services</option>
-            </select>
+            />
             <p className="text-xs text-gray-500">
-              Category is automatically set to "Services"
+              Category is automatically set to the selected Service Type
             </p>
           </div>
 

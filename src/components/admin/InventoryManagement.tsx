@@ -209,7 +209,7 @@ export default function InventoryManagement() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-black">
-              ${totalValue.toLocaleString()}
+              ₹{totalValue.toLocaleString("en-IN")}
             </div>
           </CardContent>
         </Card>
@@ -339,7 +339,7 @@ export default function InventoryManagement() {
                     </TableCell>
                     <TableCell>
                       <span className="font-medium text-black">
-                        ${item.unitCost}
+                        ₹{item.unitCost?.toLocaleString("en-IN") || "0"}
                       </span>
                     </TableCell>
                     <TableCell>

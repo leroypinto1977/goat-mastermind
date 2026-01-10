@@ -34,6 +34,36 @@ async function seedServices() {
   try {
     console.log("🌱 Seeding services...");
 
+    // First, migrate any existing services with category "Services" to proper service types
+    console.log("🔄 Migrating existing services with category 'Services'...");
+    const existingServicesWithOldCategory = await prisma.product.findMany({
+      where: {
+        category: "Services",
+      },
+    });
+
+    let migratedCount = 0;
+    for (const service of existingServicesWithOldCategory) {
+      const nameParts = service.name?.split(" - ");
+      if (nameParts && nameParts.length >= 1) {
+        const serviceType = nameParts[0];
+        if (["Writer", "Editor", "Videographer"].includes(serviceType)) {
+          await prisma.product.update({
+            where: { id: service.id },
+            data: { category: serviceType },
+          });
+          console.log(`  ✓ Migrated "${service.name}" category from "Services" to "${serviceType}"`);
+          migratedCount++;
+        }
+      }
+    }
+
+    if (migratedCount > 0) {
+      console.log(`  ✅ Migrated ${migratedCount} service(s) to proper categories\n`);
+    } else {
+      console.log(`  ℹ️  No services found with old "Services" category to migrate\n`);
+    }
+
     const services = [];
 
     // Create services for each service type and level
@@ -43,11 +73,17 @@ async function seedServices() {
         const serviceDisplayName = `${serviceName} - ${level}`;
         const serviceSlug = `${serviceName.toLowerCase()}-${level.toLowerCase().replace(/\s+/g, "-")}`;
 
-        // Check if service already exists
+        // Category should be the service type (Writer, Editor, Videographer), not "Services"
+        const serviceCategory = serviceName;
+
+        // Check if service already exists (check by name, category can be "Services" or service type)
         const existingService = await prisma.product.findFirst({
           where: {
             name: serviceDisplayName,
-            category: "Services",
+            OR: [
+              { category: "Services" },
+              { category: serviceCategory },
+            ],
           },
         });
 
@@ -56,6 +92,8 @@ async function seedServices() {
           await prisma.product.update({
             where: { id: existingService.id },
             data: {
+              name: serviceDisplayName,
+              category: serviceCategory, // Update to use service type as category
               price: inrPrice,
               description: `Professional ${serviceName.toLowerCase()} services at ${level.toLowerCase()} level`,
               isActive: true,
@@ -68,7 +106,7 @@ async function seedServices() {
             data: {
               name: serviceDisplayName,
               description: `Professional ${serviceName.toLowerCase()} services at ${level.toLowerCase()} level`,
-              category: "Services",
+              category: serviceCategory, // Use service type (Writer, Editor, Videographer) as category
               price: inrPrice,
               image: "/logos/Main logo.png",
               images: [],

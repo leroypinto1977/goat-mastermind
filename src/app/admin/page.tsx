@@ -233,14 +233,31 @@ export default function AdminDashboard() {
         setSelectedCategory("All Categories");
         setProducts(allProducts);
       }
-    } else if (activeTab === "services" && allServices.length > 0) {
-      // Services tab - only show "All Categories" and "Services"
-      const serviceCategories = ["All Categories", "Services"];
+    } else if (activeTab === "services") {
+      // Services tab - show "All Categories" and all unique service type categories
+      // Get unique service categories from existing services (dynamically)
+      const uniqueServiceCategories = Array.from(
+        new Set(
+          allServices
+            .map((s) => s.category)
+            .filter((cat) => cat && cat !== "Services" && cat !== "All Categories")
+        )
+      ).sort();
+      
+      // Start with default service types, then add any additional categories found
+      const defaultServiceTypes = ["Writer", "Editor", "Videographer"];
+      const allServiceTypes = Array.from(
+        new Set([...defaultServiceTypes, ...uniqueServiceCategories])
+      ).sort();
+      
+      const serviceCategories = ["All Categories", ...allServiceTypes];
       setProductCategories(serviceCategories);
       // Reset to "All Categories" if current selection doesn't exist
       if (!serviceCategories.includes(selectedCategory)) {
         setSelectedCategory("All Categories");
-        setServices(allServices);
+        if (allServices.length > 0) {
+          setServices(allServices);
+        }
       }
     }
   }, [activeTab, allProducts, allServices]);
@@ -293,32 +310,65 @@ export default function AdminDashboard() {
       const response = await fetch("/api/products");
       if (response.ok) {
         const data = await response.json();
-        // Filter products to only show services
+        // Filter products to show services - includes both "Services" category (legacy) 
+        // and any service type categories (dynamically determined)
+        // Exclude staff categories (product categories that are not services)
+        const staffCategories = defaultCategories.filter(cat => cat !== "All Categories");
         const allServiceProducts = (data.products || []).filter(
-          (p: any) => p.category === "Services"
+          (p: any) => 
+            p.category === "Services" || 
+            (!staffCategories.includes(p.category) && p.category && p.category !== "All Categories")
         );
 
         // Transform API services to match admin panel structure
+        // Extract service type from name or use category (supports any service type category)
         const transformedServices: Product[] = allServiceProducts.map(
-          (p: any) => ({
-            id: p.id,
-            name: p.name,
-            description: p.description || "",
-            price: p.price || 0,
-            image: p.image || "/assets/placeholder.jpg",
-            category: p.category,
-            weightRange: p.weightRange || "",
-            images: p.images || [],
-            variants:
-              p.variants?.map((v: any) => ({
-                id: v.id,
-                weight: v.weight,
-                width: v.width || "",
-                height: v.height || "",
-                diameter: v.diameter || "",
-                purities: v.purities || [],
-              })) || [],
-          })
+          (p: any) => {
+            // Determine service category:
+            // 1. If category is already set and not a staff category, use it
+            // 2. Otherwise, extract from name if format is "ServiceType - Level"
+            // 3. Fallback to "Services" if we can't determine
+            let serviceCategory = p.category;
+            const staffCategoriesList = defaultCategories.filter(cat => cat !== "All Categories");
+            
+            // If category is not a staff category and not "Services" or empty, keep it
+            if (p.category && p.category !== "Services" && !staffCategoriesList.includes(p.category) && p.category !== "All Categories") {
+              serviceCategory = p.category;
+            } else if (p.name && typeof p.name === "string") {
+              // Extract service type from name (e.g., "ServiceType - Professional" → "ServiceType")
+              const nameParts = p.name.split(" - ");
+              if (nameParts.length >= 1) {
+                const potentialServiceType = nameParts[0];
+                // If the extracted type is not a staff category, use it as service category
+                if (!staffCategoriesList.includes(potentialServiceType) && potentialServiceType !== "All Categories") {
+                  serviceCategory = potentialServiceType;
+                } else if (p.category === "Services" && nameParts.length >= 1) {
+                  // If category is "Services" (legacy), extract from name
+                  serviceCategory = potentialServiceType;
+                }
+              }
+            }
+            
+            return {
+              id: p.id,
+              name: p.name,
+              description: p.description || "",
+              price: p.price || 0,
+              image: p.image || "/assets/placeholder.jpg",
+              category: serviceCategory, // Use extracted/determined service type as category
+              weightRange: p.weightRange || "",
+              images: p.images || [],
+              variants:
+                p.variants?.map((v: any) => ({
+                  id: v.id,
+                  weight: v.weight,
+                  width: v.width || "",
+                  height: v.height || "",
+                  diameter: v.diameter || "",
+                  purities: v.purities || [],
+                })) || [],
+            };
+          }
         );
 
         console.log("Fetched services from API:", transformedServices.length);
@@ -722,10 +772,11 @@ export default function AdminDashboard() {
         setProducts(filtered);
       }
     } else if (activeTab === "services") {
-      // Services tab - filter from allServices (only services)
+      // Services tab - filter from allServices by service type (Writer, Editor, Videographer)
       if (category === "All Categories") {
         setServices(allServices);
       } else {
+        // Filter by the service type category (Writer, Editor, or Videographer)
         const filtered = allServices.filter(
           (service) => service.category === category
         );
@@ -888,7 +939,17 @@ export default function AdminDashboard() {
 
   const handleServiceAdded = async (newService: Product) => {
     try {
-      // Save to API
+      // Extract service type from name or use category
+      let serviceCategory = newService.category;
+      if (newService.name && typeof newService.name === "string") {
+        const nameParts = newService.name.split(" - ");
+        if (nameParts.length >= 1 && ["Writer", "Editor", "Videographer"].includes(nameParts[0])) {
+          serviceCategory = nameParts[0];
+        }
+      }
+      
+      // Save to API - use service type as category, but also mark it as a service
+      // Note: We'll store the actual service type (Writer, Editor, Videographer) as category
       const response = await fetch("/api/products", {
         method: "POST",
         headers: {
@@ -897,7 +958,7 @@ export default function AdminDashboard() {
         body: JSON.stringify({
           name: newService.name,
           description: newService.description,
-          category: "Services",
+          category: serviceCategory || "Services", // Use service type (Writer, Editor, Videographer) as category
           price: newService.price,
           image: newService.image || "/logos/Main logo.png",
           images: newService.images || ["/logos/Main logo.png"],
@@ -908,13 +969,22 @@ export default function AdminDashboard() {
 
       if (response.ok) {
         const data = await response.json();
+        // Extract category from saved service name if needed
+        let savedCategory = data.product.category;
+        if (data.product.name && typeof data.product.name === "string") {
+          const nameParts = data.product.name.split(" - ");
+          if (nameParts.length >= 1 && ["Writer", "Editor", "Videographer"].includes(nameParts[0])) {
+            savedCategory = nameParts[0];
+          }
+        }
+        
         const savedService: Product = {
           id: data.product.id,
           name: data.product.name,
           description: data.product.description || "",
           price: data.product.price || 0,
           image: data.product.image || "/logos/Main logo.png",
-          category: "Services",
+          category: savedCategory, // Use service type as category
           weightRange: "",
           images: data.product.images || [],
           variants: [],
@@ -925,12 +995,12 @@ export default function AdminDashboard() {
         // Update displayed services based on current filter
         if (
           selectedCategory === "All Categories" ||
-          selectedCategory === "Services"
+          selectedCategory === savedCategory
         ) {
           setServices([...services, savedService]);
         }
 
-        // Refresh services list
+        // Refresh services list to ensure consistency
         fetchServices();
 
         toast.success("Service added successfully!");
@@ -946,7 +1016,16 @@ export default function AdminDashboard() {
 
   const handleServiceUpdated = async (updatedService: Product) => {
     try {
-      // Update via API
+      // Extract service type from name or use category
+      let serviceCategory = updatedService.category;
+      if (updatedService.name && typeof updatedService.name === "string") {
+        const nameParts = updatedService.name.split(" - ");
+        if (nameParts.length >= 1 && ["Writer", "Editor", "Videographer"].includes(nameParts[0])) {
+          serviceCategory = nameParts[0];
+        }
+      }
+      
+      // Update via API - use service type as category
       const response = await fetch(`/api/products/${updatedService.id}`, {
         method: "PUT",
         headers: {
@@ -955,7 +1034,7 @@ export default function AdminDashboard() {
         body: JSON.stringify({
           name: updatedService.name,
           description: updatedService.description,
-          category: "Services",
+          category: serviceCategory || "Services", // Use service type (Writer, Editor, Videographer) as category
           price: updatedService.price,
           image: updatedService.image || "/logos/Main logo.png",
           images: updatedService.images || ["/logos/Main logo.png"],
@@ -966,13 +1045,22 @@ export default function AdminDashboard() {
 
       if (response.ok) {
         const data = await response.json();
+        // Extract category from saved service name if needed
+        let savedCategory = data.product.category;
+        if (data.product.name && typeof data.product.name === "string") {
+          const nameParts = data.product.name.split(" - ");
+          if (nameParts.length >= 1 && ["Writer", "Editor", "Videographer"].includes(nameParts[0])) {
+            savedCategory = nameParts[0];
+          }
+        }
+        
         const savedService: Product = {
           id: data.product.id,
           name: data.product.name,
           description: data.product.description || "",
           price: data.product.price || 0,
           image: data.product.image || "/logos/Main logo.png",
-          category: "Services",
+          category: savedCategory, // Use service type as category
           weightRange: "",
           images: data.product.images || [],
           variants: [],
@@ -984,11 +1072,26 @@ export default function AdminDashboard() {
         );
         setAllServices(updatedAllServices);
 
-        // Update in displayed services
-        const updatedServices = services.map((s) =>
-          s.id === savedService.id ? savedService : s
-        );
-        setServices(updatedServices);
+        // Update in displayed services - handle category-based filtering
+        if (selectedCategory === "All Categories") {
+          // Show all services, just update the edited one
+          const updatedServices = services.map((s) =>
+            s.id === savedService.id ? savedService : s
+          );
+          setServices(updatedServices);
+        } else if (selectedCategory === savedCategory) {
+          // Category matches filter, update in place
+          const updatedServices = services.map((s) =>
+            s.id === savedService.id ? savedService : s
+          );
+          setServices(updatedServices);
+        } else {
+          // Category changed and doesn't match filter, remove from view
+          setServices(services.filter((s) => s.id !== savedService.id));
+        }
+        
+        // Refresh to ensure consistency
+        fetchServices();
 
         // Reset editing state
         setEditingService(null);
@@ -1015,11 +1118,28 @@ export default function AdminDashboard() {
   };
 
   const handleCategoriesUpdate = (updatedCategories: string[]) => {
-    setProductCategories(updatedCategories);
-    // If the currently selected category was deleted, reset to "All Categories"
-    if (!updatedCategories.includes(selectedCategory)) {
-      setSelectedCategory("All Categories");
-      setProducts(allProducts);
+    if (activeTab === "services") {
+      // For Services tab, allow dynamic service type categories
+      // Filter out "All Categories" when setting
+      const serviceTypes = updatedCategories.filter((cat) => cat !== "All Categories");
+      setProductCategories(updatedCategories);
+      // If the currently selected category was deleted, reset to "All Categories"
+      if (!updatedCategories.includes(selectedCategory)) {
+        setSelectedCategory("All Categories");
+        setServices(allServices);
+      } else {
+        // Re-filter services based on selected category
+        handleCategoryChange(selectedCategory);
+      }
+      toast.success("Service types updated successfully!");
+    } else {
+      // For Staffs tab, allow normal category management
+      setProductCategories(updatedCategories);
+      // If the currently selected category was deleted, reset to "All Categories"
+      if (!updatedCategories.includes(selectedCategory)) {
+        setSelectedCategory("All Categories");
+        setProducts(allProducts);
+      }
     }
   };
 
@@ -1690,7 +1810,7 @@ export default function AdminDashboard() {
                             {quote.products.length} service
                             {quote.products.length !== 1 ? "s" : ""} requested
                             {quote.total && quote.total > 0
-                              ? ` • $${quote.total.toLocaleString()}`
+                              ? ` • ₹${quote.total.toLocaleString("en-IN")}`
                               : ""}{" "}
                             • {new Date(quote.createdAt).toLocaleDateString()}
                           </p>
@@ -1844,6 +1964,11 @@ export default function AdminDashboard() {
         onServiceAdded={handleServiceAdded}
         onServiceUpdated={handleServiceUpdated}
         editService={editingService}
+        serviceTypes={
+          activeTab === "services"
+            ? productCategories.filter((cat) => cat !== "All Categories")
+            : undefined
+        }
       />
 
       <CategoryManagementDialog
@@ -1851,6 +1976,7 @@ export default function AdminDashboard() {
         onOpenChange={setShowCategoryManagement}
         categories={productCategories}
         onCategoriesUpdate={handleCategoriesUpdate}
+        isServicesTab={activeTab === "services"}
       />
 
       <QuoteDetailsDialog

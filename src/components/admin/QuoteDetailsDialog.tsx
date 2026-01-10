@@ -254,7 +254,7 @@ const QuoteDetailsDialog = ({
                         <TableCell className="text-right">
                           {product.price && product.price > 0 ? (
                             <span className="font-semibold text-[#b87333]">
-                              ${product.price.toLocaleString()}
+                              ₹{product.price.toLocaleString("en-IN")}
                             </span>
                           ) : (
                             <span className="text-gray-400">-</span>
@@ -270,7 +270,7 @@ const QuoteDetailsDialog = ({
                           Total:
                         </TableCell>
                         <TableCell className="text-right font-bold text-lg text-[#b87333]">
-                          ${quote.total.toLocaleString()}
+                          ₹{quote.total.toLocaleString("en-IN")}
                         </TableCell>
                       </TableRow>
                     </TableFooter>
