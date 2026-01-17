@@ -83,13 +83,11 @@ export default function QuotationPage() {
     const fetchServices = async () => {
       try {
         setLoadingServices(true);
-        const response = await fetch("/api/products");
+        const response = await fetch("/api/services");
         if (response.ok) {
           const data = await response.json();
-          // Filter services and build pricing structure
-          const services = (data.products || []).filter(
-            (p: any) => p.category === "Services"
-          );
+          // Services endpoint already returns only services
+          const services = data.services || [];
 
           const pricing: ServicePricing = {
             Writer: { "Not needed": 0 },
@@ -325,10 +323,10 @@ export default function QuotationPage() {
               <div className="max-w-md mx-auto">
                 <div className="w-20 h-20 sm:w-24 sm:h-24 bg-[#b87333]/10 rounded-full flex items-center justify-center mx-auto mb-6 sm:mb-8">
                   <LogIn className="w-10 h-10 sm:w-12 sm:h-12 text-[#b87333]" />
-                </div>
+                          </div>
                 <h2 className="text-2xl sm:text-3xl md:text-4xl font-light text-[#1C1C1C] mb-4 sm:mb-6">
                   Members Only
-                </h2>
+              </h2>
                 <div className="bg-amber-50 border-l-4 border-amber-400 p-4 mb-6 rounded text-left">
                   <p className="text-sm sm:text-base text-amber-800">
                     <strong>Important:</strong> Quote requests are exclusively
@@ -343,20 +341,20 @@ export default function QuotationPage() {
                   growth needs.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  <button
+                <button
                     onClick={() => router.push("/auth")}
                     className="px-8 sm:px-10 py-3 sm:py-4 bg-[#b87333] text-white rounded-full text-base sm:text-lg font-medium transition-all duration-300 hover:bg-[#9d5f28] hover:shadow-lg flex items-center justify-center gap-2 min-h-[44px]"
                   >
                     <LogIn className="w-5 h-5" />
                     Login Now
-                  </button>
+                </button>
                   <button
                     onClick={() => router.push("/contact")}
                     className="px-8 sm:px-10 py-3 sm:py-4 bg-transparent border-2 border-[#b87333] text-[#b87333] rounded-full text-base sm:text-lg font-medium transition-all duration-300 hover:bg-[#b87333] hover:text-white flex items-center justify-center gap-2 min-h-[44px]"
                   >
                     Learn More
                   </button>
-                </div>
+          </div>
               </div>
             </div>
           ) : (
@@ -369,18 +367,18 @@ export default function QuotationPage() {
               {error && (
                 <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
                   {error}
-                </div>
-              )}
+            </div>
+          )}
 
               {pdfUrl && quoteId ? (
                 // Show success and download button
                 <div className="text-center py-12 sm:py-16">
                   <div className="w-20 h-20 sm:w-24 sm:h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6 sm:mb-8">
                     <Download className="w-10 h-10 sm:w-12 sm:h-12 text-green-600" />
-                  </div>
+          </div>
                   <h3 className="text-xl sm:text-2xl font-normal text-[#1C1C1C] mb-3 sm:mb-4">
                     Quote Generated Successfully!
-                  </h3>
+              </h3>
                   <p className="text-sm sm:text-base text-[#5A5A5A] mb-8 sm:mb-10">
                     Your quotation has been created and is ready for download.
                   </p>
@@ -405,58 +403,58 @@ export default function QuotationPage() {
                       className="block text-sm sm:text-base font-medium text-[#1C1C1C] mb-2"
                     >
                       Name <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
+                </label>
+                <input
+                  type="text"
                       id="name"
                       name="name"
-                      required
+                  required
                       value={formData.name}
                       onChange={handleInputChange}
                       className="w-full px-4 py-3 border border-[#E8E4DA] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#b87333] focus:border-transparent text-sm sm:text-base"
                       placeholder="Enter your full name"
-                    />
-                  </div>
+                />
+              </div>
 
                   {/* Business Name */}
-                  <div>
+              <div>
                     <label
                       htmlFor="businessName"
                       className="block text-sm sm:text-base font-medium text-[#1C1C1C] mb-2"
                     >
                       Business Name <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
+                </label>
+                <input
+                  type="text"
                       id="businessName"
                       name="businessName"
-                      required
+                  required
                       value={formData.businessName}
                       onChange={handleInputChange}
                       className="w-full px-4 py-3 border border-[#E8E4DA] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#b87333] focus:border-transparent text-sm sm:text-base"
                       placeholder="Enter your business name"
-                    />
-                  </div>
+                />
+              </div>
 
                   {/* Niche */}
-                  <div>
+              <div>
                     <label
                       htmlFor="niche"
                       className="block text-sm sm:text-base font-medium text-[#1C1C1C] mb-2"
                     >
                       Niche <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
+                </label>
+                <input
+                  type="text"
                       id="niche"
                       name="niche"
-                      required
+                  required
                       value={formData.niche}
                       onChange={handleInputChange}
                       className="w-full px-4 py-3 border border-[#E8E4DA] rounded-lg focus:outline-none focus:ring-2 focus:ring-[#b87333] focus:border-transparent text-sm sm:text-base"
                       placeholder="Enter your business niche"
-                    />
-                  </div>
+                />
+              </div>
 
                   {/* Services Section */}
                   <div className="space-y-6">
@@ -465,14 +463,14 @@ export default function QuotationPage() {
                     </h3>
 
                     {/* Writer */}
-                    <div>
+              <div>
                       <div className="flex items-center justify-between mb-2">
                         <label
                           htmlFor="writer"
                           className="block text-sm sm:text-base font-medium text-[#1C1C1C]"
                         >
                           Writer
-                        </label>
+                </label>
                         {formData.writer !== "Not needed" && (
                           <span className="text-sm sm:text-base font-medium text-[#b87333]">
                             ₹
@@ -506,17 +504,17 @@ export default function QuotationPage() {
                           );
                         })}
                       </select>
-                    </div>
+              </div>
 
                     {/* Editor */}
-                    <div>
+              <div>
                       <div className="flex items-center justify-between mb-2">
                         <label
                           htmlFor="editor"
                           className="block text-sm sm:text-base font-medium text-[#1C1C1C]"
                         >
                           Editor
-                        </label>
+                </label>
                         {formData.editor !== "Not needed" && (
                           <span className="text-sm sm:text-base font-medium text-[#b87333]">
                             ₹
@@ -550,17 +548,17 @@ export default function QuotationPage() {
                           );
                         })}
                       </select>
-                    </div>
+              </div>
 
                     {/* Videographer */}
-                    <div>
+              <div>
                       <div className="flex items-center justify-between mb-2">
                         <label
                           htmlFor="videographer"
                           className="block text-sm sm:text-base font-medium text-[#1C1C1C]"
                         >
                           Videographer
-                        </label>
+                </label>
                         {formData.videographer !== "Not needed" && (
                           <span className="text-sm sm:text-base font-medium text-[#b87333]">
                             ₹
@@ -571,7 +569,7 @@ export default function QuotationPage() {
                             ).toLocaleString("en-IN")}
                           </span>
                         )}
-                      </div>
+              </div>
                       <select
                         id="videographer"
                         name="videographer"
@@ -594,8 +592,8 @@ export default function QuotationPage() {
                           );
                         })}
                       </select>
-                    </div>
-                  </div>
+          </div>
+        </div>
 
                   {/* Total Section */}
                   {total > 0 && (
@@ -607,7 +605,7 @@ export default function QuotationPage() {
                         <span className="text-2xl sm:text-3xl font-bold text-[#b87333]">
                           ₹{total.toLocaleString("en-IN")}
                         </span>
-                      </div>
+            </div>
                       <p className="text-xs sm:text-sm text-[#5A5A5A] mt-2">
                         This is an estimated quote. Final pricing will be
                         confirmed after consultation.
@@ -616,7 +614,7 @@ export default function QuotationPage() {
                   )}
 
                   {/* Submit Button */}
-                  <button
+              <button
                     type="submit"
                     disabled={isSubmitting}
                     className="w-full px-8 py-4 bg-[#b87333] text-white rounded-full text-base sm:text-lg font-medium transition-all duration-300 hover:bg-[#9d5f28] hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 min-h-[44px]"
@@ -629,7 +627,7 @@ export default function QuotationPage() {
                     ) : (
                       "Get Quote"
                     )}
-                  </button>
+              </button>
                 </form>
               )}
             </div>

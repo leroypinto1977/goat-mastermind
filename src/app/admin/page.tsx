@@ -126,22 +126,7 @@ type TabType = "users" | "products" | "services" | "quotes" | "orders";
 
 const defaultCategories = [
   "All Categories",
-  "Vessels",
-  "Lamps",
-  "Coins & Bars",
-  "Bowl",
-  "Boxes",
-  "Chombu",
-  "Cups",
-  "Glass",
-  "Kamakshi",
-  "Kodam",
-  "Others",
-  "Panchapathram",
-  "Plates",
-  "Simil",
-  "Trays",
-  "Vel",
+  // Categories will be dynamically loaded from existing staff in the database
 ];
 
 export default function AdminDashboard() {
@@ -240,16 +225,18 @@ export default function AdminDashboard() {
         new Set(
           allServices
             .map((s) => s.category)
-            .filter((cat) => cat && cat !== "Services" && cat !== "All Categories")
+            .filter(
+              (cat) => cat && cat !== "Services" && cat !== "All Categories"
+            )
         )
       ).sort();
-      
+
       // Start with default service types, then add any additional categories found
       const defaultServiceTypes = ["Writer", "Editor", "Videographer"];
       const allServiceTypes = Array.from(
         new Set([...defaultServiceTypes, ...uniqueServiceCategories])
       ).sort();
-      
+
       const serviceCategories = ["All Categories", ...allServiceTypes];
       setProductCategories(serviceCategories);
       // Reset to "All Categories" if current selection doesn't exist
@@ -307,18 +294,11 @@ export default function AdminDashboard() {
 
   const fetchServices = async () => {
     try {
-      const response = await fetch("/api/products");
+      const response = await fetch("/api/services");
       if (response.ok) {
         const data = await response.json();
-        // Filter products to show services - includes both "Services" category (legacy) 
-        // and any service type categories (dynamically determined)
-        // Exclude staff categories (product categories that are not services)
-        const staffCategories = defaultCategories.filter(cat => cat !== "All Categories");
-        const allServiceProducts = (data.products || []).filter(
-          (p: any) => 
-            p.category === "Services" || 
-            (!staffCategories.includes(p.category) && p.category && p.category !== "All Categories")
-        );
+        // Services endpoint already filters and returns only services
+        const allServiceProducts = data.services || [];
 
         // Transform API services to match admin panel structure
         // Extract service type from name or use category (supports any service type category)
@@ -329,18 +309,44 @@ export default function AdminDashboard() {
             // 2. Otherwise, extract from name if format is "ServiceType - Level"
             // 3. Fallback to "Services" if we can't determine
             let serviceCategory = p.category;
-            const staffCategoriesList = defaultCategories.filter(cat => cat !== "All Categories");
-            
-            // If category is not a staff category and not "Services" or empty, keep it
-            if (p.category && p.category !== "Services" && !staffCategoriesList.includes(p.category) && p.category !== "All Categories") {
+            // List of known old SilverCrafts staff categories (for filtering)
+            const oldStaffCategories = [
+              "Vessels",
+              "Lamps",
+              "Coins & Bars",
+              "Bowl",
+              "Boxes",
+              "Chombu",
+              "Cups",
+              "Glass",
+              "Kamakshi",
+              "Kodam",
+              "Others",
+              "Panchapathram",
+              "Plates",
+              "Simil",
+              "Trays",
+              "Vel",
+            ];
+
+            // If category is not an old staff category and not "Services" or empty, keep it
+            if (
+              p.category &&
+              p.category !== "Services" &&
+              !oldStaffCategories.includes(p.category) &&
+              p.category !== "All Categories"
+            ) {
               serviceCategory = p.category;
             } else if (p.name && typeof p.name === "string") {
               // Extract service type from name (e.g., "ServiceType - Professional" → "ServiceType")
               const nameParts = p.name.split(" - ");
               if (nameParts.length >= 1) {
                 const potentialServiceType = nameParts[0];
-                // If the extracted type is not a staff category, use it as service category
-                if (!staffCategoriesList.includes(potentialServiceType) && potentialServiceType !== "All Categories") {
+                // If the extracted type is not an old staff category, use it as service category
+                if (
+                  !oldStaffCategories.includes(potentialServiceType) &&
+                  potentialServiceType !== "All Categories"
+                ) {
                   serviceCategory = potentialServiceType;
                 } else if (p.category === "Services" && nameParts.length >= 1) {
                   // If category is "Services" (legacy), extract from name
@@ -348,7 +354,7 @@ export default function AdminDashboard() {
                 }
               }
             }
-            
+
             return {
               id: p.id,
               name: p.name,
@@ -410,15 +416,13 @@ export default function AdminDashboard() {
 
   const fetchProducts = async () => {
     try {
-      const response = await fetch("/api/products");
+      const response = await fetch("/api/staff");
       if (response.ok) {
         const data = await response.json();
-        console.log("Fetched products from API:", data.products?.length || 0);
+        console.log("Fetched staff from API:", data.staff?.length || 0);
 
-        // Filter out services - staff should NOT include services
-        const staffProducts = (data.products || []).filter(
-          (p: any) => p.category !== "Services"
-        );
+        // Staff endpoint already filters and returns only staff
+        const staffProducts = data.staff || [];
 
         console.log(
           "Filtered staff (excluding services):",
@@ -739,7 +743,7 @@ export default function AdminDashboard() {
     }
 
     try {
-      const response = await fetch(`/api/products/${serviceId}`, {
+      const response = await fetch(`/api/services/${serviceId}`, {
         method: "DELETE",
       });
 
@@ -788,7 +792,7 @@ export default function AdminDashboard() {
   const handleProductAdded = async (newProduct: Product) => {
     try {
       // Save to API
-      const response = await fetch("/api/products", {
+      const response = await fetch("/api/staff", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -815,16 +819,16 @@ export default function AdminDashboard() {
       if (response.ok) {
         const data = await response.json();
         const savedProduct: Product = {
-          id: data.product.id,
-          name: data.product.name,
-          description: data.product.description || "",
-          price: data.product.price || 0,
-          image: data.product.image || "/assets/placeholder.jpg",
-          category: data.product.category,
-          weightRange: data.product.weightRange || "",
-          images: data.product.images || [],
+          id: data.staff.id,
+          name: data.staff.name,
+          description: data.staff.description || "",
+          price: data.staff.price || 0,
+          image: data.staff.image || "/assets/placeholder.jpg",
+          category: data.staff.category,
+          weightRange: data.staff.weightRange || "",
+          images: data.staff.images || [],
           variants:
-            data.product.variants?.map((v: any) => ({
+            data.staff.variants?.map((v: any) => ({
               id: v.id,
               weight: v.weight,
               width: v.width || "",
@@ -858,7 +862,7 @@ export default function AdminDashboard() {
   const handleProductUpdated = async (updatedProduct: Product) => {
     try {
       // Update via API
-      const response = await fetch(`/api/products/${updatedProduct.id}`, {
+      const response = await fetch(`/api/staff/${updatedProduct.id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -885,16 +889,16 @@ export default function AdminDashboard() {
       if (response.ok) {
         const data = await response.json();
         const savedProduct: Product = {
-          id: data.product.id,
-          name: data.product.name,
-          description: data.product.description || "",
-          price: data.product.price || 0,
-          image: data.product.image || "/assets/placeholder.jpg",
-          category: data.product.category,
-          weightRange: data.product.weightRange || "",
-          images: data.product.images || [],
+          id: data.staff.id,
+          name: data.staff.name,
+          description: data.staff.description || "",
+          price: data.staff.price || 0,
+          image: data.staff.image || "/assets/placeholder.jpg",
+          category: data.staff.category,
+          weightRange: data.staff.weightRange || "",
+          images: data.staff.images || [],
           variants:
-            data.product.variants?.map((v: any) => ({
+            data.staff.variants?.map((v: any) => ({
               id: v.id,
               weight: v.weight,
               width: v.width || "",
@@ -943,14 +947,17 @@ export default function AdminDashboard() {
       let serviceCategory = newService.category;
       if (newService.name && typeof newService.name === "string") {
         const nameParts = newService.name.split(" - ");
-        if (nameParts.length >= 1 && ["Writer", "Editor", "Videographer"].includes(nameParts[0])) {
+        if (
+          nameParts.length >= 1 &&
+          ["Writer", "Editor", "Videographer"].includes(nameParts[0])
+        ) {
           serviceCategory = nameParts[0];
         }
       }
-      
+
       // Save to API - use service type as category, but also mark it as a service
       // Note: We'll store the actual service type (Writer, Editor, Videographer) as category
-      const response = await fetch("/api/products", {
+      const response = await fetch("/api/services", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -970,23 +977,26 @@ export default function AdminDashboard() {
       if (response.ok) {
         const data = await response.json();
         // Extract category from saved service name if needed
-        let savedCategory = data.product.category;
-        if (data.product.name && typeof data.product.name === "string") {
-          const nameParts = data.product.name.split(" - ");
-          if (nameParts.length >= 1 && ["Writer", "Editor", "Videographer"].includes(nameParts[0])) {
+        let savedCategory = data.service.category;
+        if (data.service.name && typeof data.service.name === "string") {
+          const nameParts = data.service.name.split(" - ");
+          if (
+            nameParts.length >= 1 &&
+            ["Writer", "Editor", "Videographer"].includes(nameParts[0])
+          ) {
             savedCategory = nameParts[0];
           }
         }
-        
+
         const savedService: Product = {
-          id: data.product.id,
-          name: data.product.name,
-          description: data.product.description || "",
-          price: data.product.price || 0,
-          image: data.product.image || "/logos/Main logo.png",
+          id: data.service.id,
+          name: data.service.name,
+          description: data.service.description || "",
+          price: data.service.price || 0,
+          image: data.service.image || "/logos/Main logo.png",
           category: savedCategory, // Use service type as category
           weightRange: "",
-          images: data.product.images || [],
+          images: data.service.images || [],
           variants: [],
         };
 
@@ -1020,13 +1030,16 @@ export default function AdminDashboard() {
       let serviceCategory = updatedService.category;
       if (updatedService.name && typeof updatedService.name === "string") {
         const nameParts = updatedService.name.split(" - ");
-        if (nameParts.length >= 1 && ["Writer", "Editor", "Videographer"].includes(nameParts[0])) {
+        if (
+          nameParts.length >= 1 &&
+          ["Writer", "Editor", "Videographer"].includes(nameParts[0])
+        ) {
           serviceCategory = nameParts[0];
         }
       }
-      
+
       // Update via API - use service type as category
-      const response = await fetch(`/api/products/${updatedService.id}`, {
+      const response = await fetch(`/api/services/${updatedService.id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -1046,23 +1059,26 @@ export default function AdminDashboard() {
       if (response.ok) {
         const data = await response.json();
         // Extract category from saved service name if needed
-        let savedCategory = data.product.category;
-        if (data.product.name && typeof data.product.name === "string") {
-          const nameParts = data.product.name.split(" - ");
-          if (nameParts.length >= 1 && ["Writer", "Editor", "Videographer"].includes(nameParts[0])) {
+        let savedCategory = data.service.category;
+        if (data.service.name && typeof data.service.name === "string") {
+          const nameParts = data.service.name.split(" - ");
+          if (
+            nameParts.length >= 1 &&
+            ["Writer", "Editor", "Videographer"].includes(nameParts[0])
+          ) {
             savedCategory = nameParts[0];
           }
         }
-        
+
         const savedService: Product = {
-          id: data.product.id,
-          name: data.product.name,
-          description: data.product.description || "",
-          price: data.product.price || 0,
-          image: data.product.image || "/logos/Main logo.png",
+          id: data.service.id,
+          name: data.service.name,
+          description: data.service.description || "",
+          price: data.service.price || 0,
+          image: data.service.image || "/logos/Main logo.png",
           category: savedCategory, // Use service type as category
           weightRange: "",
-          images: data.product.images || [],
+          images: data.service.images || [],
           variants: [],
         };
 
@@ -1089,7 +1105,7 @@ export default function AdminDashboard() {
           // Category changed and doesn't match filter, remove from view
           setServices(services.filter((s) => s.id !== savedService.id));
         }
-        
+
         // Refresh to ensure consistency
         fetchServices();
 
@@ -1121,7 +1137,9 @@ export default function AdminDashboard() {
     if (activeTab === "services") {
       // For Services tab, allow dynamic service type categories
       // Filter out "All Categories" when setting
-      const serviceTypes = updatedCategories.filter((cat) => cat !== "All Categories");
+      const serviceTypes = updatedCategories.filter(
+        (cat) => cat !== "All Categories"
+      );
       setProductCategories(updatedCategories);
       // If the currently selected category was deleted, reset to "All Categories"
       if (!updatedCategories.includes(selectedCategory)) {
